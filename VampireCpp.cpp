@@ -14,6 +14,11 @@ struct Player
 	float size_y;
 };
 
+SDL_FRect makeRect(const Player& player)
+{
+	return SDL_FRect{ player.pos_x, player.pos_y, player.size_x, player.size_y };
+}
+
 int main()
 {
 	SDL_Window* window = nullptr;
@@ -38,12 +43,7 @@ int main()
 	float playerSizeY = 100;
 	Player player{width / 2 - playerSizeX / 2, height / 2 - playerSizeY / 2, playerSizeX, playerSizeY};
 
-	SDL_FRect playerRect{
-		player.pos_x,
-		player.pos_y,
-		player.size_x,
-		player.size_y
-	};
+	
 
 	bool running = true;
 	while (running)
@@ -57,7 +57,11 @@ int main()
 		}
 
 		//update
+		player.pos_x += 0.1f;
+		SDL_FRect playerRect = makeRect(player);
 		
+
+		//render
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
 		SDL_RenderClear(renderer);
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
