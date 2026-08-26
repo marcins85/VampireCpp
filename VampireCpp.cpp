@@ -12,6 +12,7 @@ struct Player
 	float pos_y;
 	float size_x;
 	float size_y;
+	float speed;
 };
 
 SDL_FRect makeRect(const Player& player)
@@ -41,7 +42,8 @@ int main()
 	SDL_Event event;
 	float playerSizeX = 40;
 	float playerSizeY = 100;
-	Player player{width / 2 - playerSizeX / 2, height / 2 - playerSizeY / 2, playerSizeX, playerSizeY};
+	float playerSpeed = 0.1f;
+	Player player{width / 2 - playerSizeX / 2, height / 2 - playerSizeY / 2, playerSizeX, playerSizeY, playerSpeed};
 
 	
 
@@ -57,7 +59,17 @@ int main()
 		}
 
 		//update
-		player.pos_x += 0.1f;
+		
+		float dirX = 0;
+		float dirY = 0;
+		const bool* keyState = SDL_GetKeyboardState(nullptr);
+		if (keyState[SDL_SCANCODE_A]) dirX = -1;
+		if (keyState[SDL_SCANCODE_D]) dirX = 1;
+		if (keyState[SDL_SCANCODE_S]) dirY = 1;
+		if (keyState[SDL_SCANCODE_W]) dirY = -1;
+
+		player.pos_x += player.speed * dirX;
+		player.pos_y += player.speed * dirY;
 		SDL_FRect playerRect = makeRect(player);
 		
 
