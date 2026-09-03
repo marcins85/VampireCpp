@@ -4,8 +4,7 @@
 #include "VampireCpp.h"
 #include <SDL3/SDL.h>
 #include <cmath>
-
-using namespace std;
+#include <algorithm>
 
 struct Player
 {
@@ -76,15 +75,18 @@ int main()
 		// normalize vector
 		if (dirX != 0.0f || dirY != 0.0f)
 		{
-			float dirLength = sqrt((dirX * dirX) + (dirY * dirY));
+			float dirLength = std::sqrt((dirX * dirX) + (dirY * dirY));
 			dirX = dirX / dirLength;
 			dirY = dirY / dirLength;
 		}
 
 		player.pos_x += player.speed * dirX * deltaTime;
+		player.pos_x = std::clamp(player.pos_x, 0.0f, width - player.size_x);
+
 		player.pos_y += player.speed * dirY * deltaTime;
-		SDL_FRect playerRect = makeRect(player);
+		player.pos_y = std::clamp(player.pos_y, 0.0f, height - player.size_y);
 		
+		SDL_FRect playerRect = makeRect(player);
 
 		//render
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
