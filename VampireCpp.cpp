@@ -3,6 +3,7 @@
 
 #include "VampireCpp.h"
 #include <SDL3/SDL.h>
+#include <cmath>
 
 using namespace std;
 
@@ -67,10 +68,18 @@ int main()
 		float dirX = 0.0f;
 		float dirY = 0.0f;
 		const bool* keyState = SDL_GetKeyboardState(nullptr);
-		if (keyState[SDL_SCANCODE_A]) dirX = -1;
-		if (keyState[SDL_SCANCODE_D]) dirX = 1;
-		if (keyState[SDL_SCANCODE_S]) dirY = 1;
-		if (keyState[SDL_SCANCODE_W]) dirY = -1;
+		if (keyState[SDL_SCANCODE_A]) dirX = -1.0f;
+		if (keyState[SDL_SCANCODE_D]) dirX = 1.0f;
+		if (keyState[SDL_SCANCODE_S]) dirY = 1.0f;
+		if (keyState[SDL_SCANCODE_W]) dirY = -1.0f;
+
+		// normalize vector
+		if (dirX != 0.0f || dirY != 0.0f)
+		{
+			float dirLength = sqrt((dirX * dirX) + (dirY * dirY));
+			dirX = dirX / dirLength;
+			dirY = dirY / dirLength;
+		}
 
 		player.pos_x += player.speed * dirX * deltaTime;
 		player.pos_y += player.speed * dirY * deltaTime;
