@@ -40,12 +40,14 @@ int main()
 	}
 	
 	SDL_Event event;
+
 	float playerSizeX = 40;
 	float playerSizeY = 100;
-	float playerSpeed = 0.1f;
+	float playerSpeed = 100.0f;
 	Player player{width / 2 - playerSizeX / 2, height / 2 - playerSizeY / 2, playerSizeX, playerSizeY, playerSpeed};
 
-	
+	int prevTime = SDL_GetTicks();
+	int actualTime = 0;
 
 	bool running = true;
 	while (running)
@@ -59,17 +61,19 @@ int main()
 		}
 
 		//update
-		
-		float dirX = 0;
-		float dirY = 0;
+		actualTime = SDL_GetTicks();
+		float deltaTime = ((float)actualTime - (float)prevTime) / 1000;
+
+		float dirX = 0.0f;
+		float dirY = 0.0f;
 		const bool* keyState = SDL_GetKeyboardState(nullptr);
 		if (keyState[SDL_SCANCODE_A]) dirX = -1;
 		if (keyState[SDL_SCANCODE_D]) dirX = 1;
 		if (keyState[SDL_SCANCODE_S]) dirY = 1;
 		if (keyState[SDL_SCANCODE_W]) dirY = -1;
 
-		player.pos_x += player.speed * dirX;
-		player.pos_y += player.speed * dirY;
+		player.pos_x += player.speed * dirX * deltaTime;
+		player.pos_y += player.speed * dirY * deltaTime;
 		SDL_FRect playerRect = makeRect(player);
 		
 
@@ -79,6 +83,8 @@ int main()
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderFillRect(renderer, &playerRect);
 		SDL_RenderPresent(renderer);
+
+		prevTime = actualTime;
 	}
 
 	SDL_DestroyRenderer(renderer);
