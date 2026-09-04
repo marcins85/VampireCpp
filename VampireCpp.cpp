@@ -6,7 +6,7 @@
 #include <cmath>
 #include <algorithm>
 
-struct Player
+struct Entity
 {
 	float pos_x;
 	float pos_y;
@@ -15,9 +15,19 @@ struct Player
 	float speed;
 };
 
-SDL_FRect makeRect(const Player& player)
+struct Player : Entity
 {
-	return SDL_FRect{ player.pos_x, player.pos_y, player.size_x, player.size_y };
+	
+};
+
+struct Enemy : Entity
+{
+	
+};
+
+SDL_FRect makeRect(const Entity& entity)
+{
+	return SDL_FRect{ entity.pos_x, entity.pos_y, entity.size_x, entity.size_y };
 }
 
 int main()
@@ -45,6 +55,11 @@ int main()
 	float playerSizeY = 100;
 	float playerSpeed = 100.0f;
 	Player player{width / 2 - playerSizeX / 2, height / 2 - playerSizeY / 2, playerSizeX, playerSizeY, playerSpeed};
+
+	float enemySizeX = 30.0f;
+	float enemySizeY = 90.0f;
+	float enemySpeed = 80.0f;
+	Enemy enemy{20.0f, 100.0f, enemySizeX, enemySizeY, enemySpeed};
 
 	int prevTime = SDL_GetTicks();
 	int actualTime = 0;
@@ -87,12 +102,14 @@ int main()
 		player.pos_y = std::clamp(player.pos_y, 0.0f, height - player.size_y);
 		
 		SDL_FRect playerRect = makeRect(player);
+		SDL_FRect enemyRect = makeRect(enemy);
 
 		//render
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
 		SDL_RenderClear(renderer);
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderFillRect(renderer, &playerRect);
+		SDL_RenderFillRect(renderer, &enemyRect);
 		SDL_RenderPresent(renderer);
 
 		prevTime = actualTime;
