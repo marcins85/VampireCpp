@@ -30,6 +30,16 @@ SDL_FRect makeRect(const Entity& entity)
 	return SDL_FRect{ entity.pos_x, entity.pos_y, entity.size_x, entity.size_y };
 }
 
+void normalizeVector(float& x, float& y)
+{
+	if (x != 0.0f || y != 0.0f)
+	{
+		float dirLength = std::sqrt((x * x) + (y * y));
+		x = x / dirLength;
+		y = y / dirLength;
+	}
+}
+
 int main()
 {
 	SDL_Window* window = nullptr;
@@ -87,13 +97,7 @@ int main()
 		if (keyState[SDL_SCANCODE_S]) dirY = 1.0f;
 		if (keyState[SDL_SCANCODE_W]) dirY = -1.0f;
 
-		// normalize vector
-		if (dirX != 0.0f || dirY != 0.0f)
-		{
-			float dirLength = std::sqrt((dirX * dirX) + (dirY * dirY));
-			dirX = dirX / dirLength;
-			dirY = dirY / dirLength;
-		}
+		normalizeVector(dirX, dirY);
 
 		player.pos_x += player.speed * dirX * deltaTime;
 		player.pos_x = std::clamp(player.pos_x, 0.0f, width - player.size_x);
@@ -101,6 +105,13 @@ int main()
 		player.pos_y += player.speed * dirY * deltaTime;
 		player.pos_y = std::clamp(player.pos_y, 0.0f, height - player.size_y);
 		
+		float enemyDirX = player.pos_x - enemy.pos_x;
+		float enemyDirY = player.pos_y - enemy.pos_y;
+		normalizeVector(enemyDirX, enemyDirY);
+
+		enemy.pos_x += enemy.speed * enemyDirX * deltaTime;
+		enemy.pos_y += enemy.speed * enemyDirY * deltaTime;
+
 		SDL_FRect playerRect = makeRect(player);
 		SDL_FRect enemyRect = makeRect(enemy);
 
