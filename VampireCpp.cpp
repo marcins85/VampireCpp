@@ -6,7 +6,7 @@
 #include <cmath>
 #include <algorithm>
 
-struct Player
+struct Entity
 {
 	float pos_x;
 	float pos_y;
@@ -15,9 +15,29 @@ struct Player
 	float speed;
 };
 
-SDL_FRect makeRect(const Player& player)
+struct Player : Entity
 {
-	return SDL_FRect{ player.pos_x, player.pos_y, player.size_x, player.size_y };
+	
+};
+
+struct Enemy : Entity
+{
+	
+};
+
+SDL_FRect makeRect(const Entity& entity)
+{
+	return SDL_FRect{ entity.pos_x, entity.pos_y, entity.size_x, entity.size_y };
+}
+
+void normalizeVector(float& x, float& y)
+{
+	if (x != 0.0f || y != 0.0f)
+	{
+		float dirLength = std::sqrt((x * x) + (y * y));
+		x = x / dirLength;
+		y = y / dirLength;
+	}
 }
 
 int main()
@@ -46,6 +66,11 @@ int main()
 	float playerSpeed = 100.0f;
 	Player player{width / 2 - playerSizeX / 2, height / 2 - playerSizeY / 2, playerSizeX, playerSizeY, playerSpeed};
 
+	float enemySizeX = 30.0f;
+	float enemySizeY = 90.0f;
+	float enemySpeed = 80.0f;
+	Enemy enemy{20.0f, 100.0f, enemySizeX, enemySizeY, enemySpeed};
+
 	int prevTime = SDL_GetTicks();
 	int actualTime = 0;
 
@@ -72,13 +97,7 @@ int main()
 		if (keyState[SDL_SCANCODE_S]) dirY = 1.0f;
 		if (keyState[SDL_SCANCODE_W]) dirY = -1.0f;
 
-		// normalize vector
-		if (dirX != 0.0f || dirY != 0.0f)
-		{
-			float dirLength = std::sqrt((dirX * dirX) + (dirY * dirY));
-			dirX = dirX / dirLength;
-			dirY = dirY / dirLength;
-		}
+		normalizeVector(dirX, dirY);
 
 		player.pos_x += player.speed * dirX * deltaTime;
 		player.pos_x = std::clamp(player.pos_x, 0.0f, width - player.size_x);
@@ -86,13 +105,22 @@ int main()
 		player.pos_y += player.speed * dirY * deltaTime;
 		player.pos_y = std::clamp(player.pos_y, 0.0f, height - player.size_y);
 		
+		float enemyDirX = player.pos_x - enemy.pos_x;
+		float enemyDirY = player.pos_y - enemy.pos_y;
+		normalizeVector(enemyDirX, enemyDirY);
+
+		enemy.pos_x += enemy.speed * enemyDirX * deltaTime;
+		enemy.pos_y += enemy.speed * enemyDirY * deltaTime;
+
 		SDL_FRect playerRect = makeRect(player);
+		SDL_FRect enemyRect = makeRect(enemy);
 
 		//render
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
 		SDL_RenderClear(renderer);
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderFillRect(renderer, &playerRect);
+		SDL_RenderFillRect(renderer, &enemyRect);
 		SDL_RenderPresent(renderer);
 
 		prevTime = actualTime;
