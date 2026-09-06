@@ -40,6 +40,46 @@ void normalizeVector(float& x, float& y)
 	}
 }
 
+bool collisionCheck(const SDL_FRect& a, const SDL_FRect& b)
+{
+	float aMinX{ a.x };
+	float aMaxX{ a.x + a.w };
+	float aMinY{ a.y };
+	float aMaxY{ a.y + a.h };
+
+	float bMinX{ b.x };
+	float bMaxX{ b.x + b.w };
+	float bMinY{ b.y };
+	float bMaxY{ b.y + b.h };
+
+	// if left side of A is the right side of B
+	if (aMinX >= bMaxX)
+	{
+		return false;
+	}
+
+	// if right side of A is left side of B
+	if (aMaxX <= bMinX)
+	{
+		return false;
+	}
+
+	// if top side of A is below B
+	if (aMinY >= bMaxY)
+	{
+		return false;
+	}
+
+	// if bottom side of A is above B
+	if (aMaxY <= bMinY)
+	{
+		return false;
+	}
+
+	// if none of the sides of A are outside of B
+	return true;
+}
+
 int main()
 {
 	SDL_Window* window = nullptr;
@@ -115,10 +155,17 @@ int main()
 		SDL_FRect playerRect = makeRect(player);
 		SDL_FRect enemyRect = makeRect(enemy);
 
+		bool collision = collisionCheck(playerRect, enemyRect);
+		
+
 		//render
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
 		SDL_RenderClear(renderer);
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		if (collision)
+		{
+			SDL_SetRenderDrawColor(renderer, 200, 100, 220, 255);
+		}
 		SDL_RenderFillRect(renderer, &playerRect);
 		SDL_RenderFillRect(renderer, &enemyRect);
 		SDL_RenderPresent(renderer);
