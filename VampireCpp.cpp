@@ -80,6 +80,41 @@ bool collisionCheck(const SDL_FRect& a, const SDL_FRect& b)
 	return true;
 }
 
+void updatePlayer(Player& player, float deltaTime, int width, int height)
+{
+	float dirX = 0.0f;
+	float dirY = 0.0f;
+	const bool* keyState = SDL_GetKeyboardState(nullptr);
+	if (keyState[SDL_SCANCODE_A]) dirX = -1.0f;
+	if (keyState[SDL_SCANCODE_D]) dirX = 1.0f;
+	if (keyState[SDL_SCANCODE_S]) dirY = 1.0f;
+	if (keyState[SDL_SCANCODE_W]) dirY = -1.0f;
+
+	normalizeVector(dirX, dirY);
+
+	player.pos_x += player.speed * dirX * deltaTime;
+	player.pos_x = std::clamp(player.pos_x, 0.0f, width - player.size_x);
+
+	player.pos_y += player.speed * dirY * deltaTime;
+	player.pos_y = std::clamp(player.pos_y, 0.0f, height - player.size_y);
+}
+
+void updateEnemy(const Player& player, Enemy& enemy, float deltaTime, bool collide)
+{
+	float enemyDirX = player.pos_x - enemy.pos_x;
+	float enemyDirY = player.pos_y - enemy.pos_y;
+	normalizeVector(enemyDirX, enemyDirY);
+
+	if (collide)
+	{
+		enemyDirX = 0;
+		enemyDirY = 0;
+	}
+
+	enemy.pos_x += enemy.speed * enemyDirX * deltaTime;
+	enemy.pos_y += enemy.speed * enemyDirY * deltaTime;
+}
+
 int main()
 {
 	SDL_Window* window = nullptr;
@@ -129,43 +164,19 @@ int main()
 		actualTime = SDL_GetTicks();
 		float deltaTime = ((float)actualTime - (float)prevTime) / 1000;
 
-		float dirX = 0.0f;
-		float dirY = 0.0f;
-		const bool* keyState = SDL_GetKeyboardState(nullptr);
-		if (keyState[SDL_SCANCODE_A]) dirX = -1.0f;
-		if (keyState[SDL_SCANCODE_D]) dirX = 1.0f;
-		if (keyState[SDL_SCANCODE_S]) dirY = 1.0f;
-		if (keyState[SDL_SCANCODE_W]) dirY = -1.0f;
-
-		normalizeVector(dirX, dirY);
-
-		player.pos_x += player.speed * dirX * deltaTime;
-		player.pos_x = std::clamp(player.pos_x, 0.0f, width - player.size_x);
-
-		player.pos_y += player.speed * dirY * deltaTime;
-		player.pos_y = std::clamp(player.pos_y, 0.0f, height - player.size_y);
-		
-		float enemyDirX = player.pos_x - enemy.pos_x;
-		float enemyDirY = player.pos_y - enemy.pos_y;
-		normalizeVector(enemyDirX, enemyDirY);
-
-		enemy.pos_x += enemy.speed * enemyDirX * deltaTime;
-		enemy.pos_y += enemy.speed * enemyDirY * deltaTime;
+		updatePlayer(player, deltaTime, width, height);
 
 		SDL_FRect playerRect = makeRect(player);
 		SDL_FRect enemyRect = makeRect(enemy);
 
 		bool collision = collisionCheck(playerRect, enemyRect);
+		updateEnemy(player, enemy, deltaTime, collision);
 		
 
 		//render
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
 		SDL_RenderClear(renderer);
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-		if (collision)
-		{
-			SDL_SetRenderDrawColor(renderer, 200, 100, 220, 255);
-		}
 		SDL_RenderFillRect(renderer, &playerRect);
 		SDL_RenderFillRect(renderer, &enemyRect);
 		SDL_RenderPresent(renderer);
